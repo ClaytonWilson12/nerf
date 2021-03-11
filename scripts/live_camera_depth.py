@@ -10,24 +10,25 @@ import pyrealsense2 as rs
 
 IMAGE_H = int(480)
 IMAGE_W = int(848)
+CAMERA_OFFSET = .02
 
 pipeline = rs.pipeline()
 config = rs.config()
 
-config.enable_stream(rs.stream.depth, 848, 480, rs.format.z16,30)
+config.enable_stream(rs.stream.depth, IMAGE_W, IMAGE_H, rs.format.z16,30)
 
 # function to calculate depth based on (width or X direction, height or Y direction)
 def get_depth(x, y):
 
     # offset = calibrate()
     count = 0
-    distance_values = []
+    distance_value = 0
      
     profile = pipeline.start(config)
     
     try:
-        #while count < 5:
-	while True:
+        while count < 1:
+	#while True:
             frames = pipeline.wait_for_frames()
             depth = frames.get_depth_frame()
             if not depth:
@@ -37,17 +38,14 @@ def get_depth(x, y):
             height = depth.get_height()
 
             distance = depth.get_distance(x, y)
-            actual_distance = distance - .02 # offset distance for camera calibration
-	    print (actual_distance * 3.28)
-            if actual_distance > 0:
-                distance_values.append(actual_distance)
+            actual_distance = distance - CAMERA_OFFSET # offset distance for camera calibration
+	        #print (actual_distance * 3.28)
             
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 cv2.destroyAllWindows()
             count = count + 1
 
-        average_distance = sum(distance_values) / len(distance_values)
-        print (average_distance)
+        return actual_distance
             
     finally:
         pipeline.stop()
@@ -89,7 +87,7 @@ def calibrate():
         pipeline.stop()
 
 if __name__ == "__main__":
-    get_depth(424, 240)
+    get_depth(300, 240)
 
 cv2.destroyAllWindows()
 

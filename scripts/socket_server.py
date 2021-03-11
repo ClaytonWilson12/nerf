@@ -16,7 +16,14 @@ class Connect(object):
         print('listening on: ', server_address)
 
     def listen(self):
-        pub = rospy.Publisher("color_choice", String, queue_size=10)
+
+        #publisher for color picker
+        pub_color = rospy.Publisher("color_choice", String, queue_size=10)
+        rospy.init_node("simulate", anonymous=True)
+        rate = rospy.Rate(10)
+
+        #publisher for arm/disarm
+        pub_arm = rospy.Publisher("arm_disarm", String, queue_size=10)
         rospy.init_node("simulate", anonymous=True)
         rate = rospy.Rate(10)
 
@@ -27,7 +34,12 @@ class Connect(object):
             try:
                 data = connection.recv(16)
                 print(data)
-                pub.publish(data)
+
+                if(data == "armed" or data == "disarmed"):
+                    pub_arm.publish(data)
+                else:
+                    pub_color.publish(data)
+                
                 
             finally:
                 connection.close()
